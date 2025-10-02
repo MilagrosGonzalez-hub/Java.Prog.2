@@ -1,0 +1,35 @@
+import java.util.Scanner;
+
+public class Practica06 {
+
+  public static Docentes registrarDocente() {
+    Scanner scanner = new Scanner(System.in);
+
+    System.out.print("Ingresar nombre del docente: ");
+    String nombre = scanner.nextLine();
+
+    System.out.print("Ingresar apellido del docente: ");
+    String apellido = scanner.nextLine();
+
+    System.out.print("Ingresar DNI del docente: ");
+    int dni = Integer.parseInt(scanner.nextLine());
+
+    System.out.print("Ingresar la cantidad de materias que enseña: ");
+    int cantidadMaterias = Integer.parseInt(scanner.nextLine());
+
+    Materia[] materias = new Materia[cantidadMaterias];
+    for (int i = 0; i < cantidadMaterias; i++) {
+      System.out.print("Ingrese el nombre de la materia " + (i + 1) + ": ");
+      String nombreMateria = scanner.nextLine();
+      materias[i] = new Materia(nombreMateria);
+    }
+
+    return new Docentes(nombre, apellido, dni, materias);
+  }
+
+  public static void main(String[] args) {
+    Docentes nuevoDocente = registrarDocente();
+    System.out.println(nuevoDocente.informe());
+    nuevoDocente.mostrarMaterias();
+  }
+}
