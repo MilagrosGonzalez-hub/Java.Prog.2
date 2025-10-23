@@ -1,0 +1,45 @@
+public class Caramelo {
+    // atributos
+private String marca;
+private String sabor;
+private float peso;
+private String forma;
+private String color;
+    // constructor
+public Caramelo(String marca, String sabor, float peso, String forma, String color) {
+    this.marca = marca;
+    this.sabor = sabor;
+    this.peso = peso;
+    this.forma = forma;
+    this.color = color;
+}
+    // métodos getters
+public String getMarca() {
+    return marca;
+}
+public String getSabor() {
+    return sabor;
+}
+public float getPeso() {
+    return peso;
+}
+public String getForma() {
+    return forma;
+}
+public String getColor() {
+    return color;
+}
+    // método para mostrar la información
+public void mostrarInfo() {
+    System.out.println("Caramelo de marca: " + marca);
+    System.out.println("Caramelo de sabor: " + sabor);
+    System.out.println("Caramelo peso en gramos: " + peso);
+    System.out.println("Caramelo de forma: " + forma);
+    System.out.println("Caramelo de color: " + color);
+}
+    // método main para ejecutar el programa
+    public static void main(String[] args) {
+        Caramelo dulce = new Caramelo("arcor", "durazno", 1.05f, "ovalado", "naranja");
+        dulce.mostrarInfo();
+}
+}
