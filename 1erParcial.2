@@ -1,0 +1,21 @@
+Desarrolla una función que reciba un objeto que implemente la interfaz InformeDeDatos y muestre en pantalla el informe generado. Además, si se trata de un docente, también deben mostrarse todas las materias que dicta.
+public static void mostrarInforme(InformeDeDatos persona) {
+    // donde me muestra el inf. general (se decia polimorfismo)
+    System.out.println(persona.informe());
+
+    // Si el objeto es un Docente, que me muestre también las materias
+    if (persona instanceof Docentes) {
+        Docentes docente = (Docentes) persona;
+        docente.mostrarMaterias();
+    }
+}
+public static void main(String[] args) {
+    Estudiantes estudiante = new Estudiantes("Milagros", "Gonzalez", 43065454, "IQ");
+    estudiante.modificarCarrera("TUP");
+    Materia iq = new Materia("IQ");
+    Materia tup = new Materia("TUP");
+    Materia[] materias = { isi, tup };
+    Docentes docente = new Docentes("Facundo", "Uferer", 12345678, materias);
+    mostrarInforme(docente);
+}
+
