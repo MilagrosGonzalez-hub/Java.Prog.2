@@ -120,9 +120,37 @@ class Auto extends Vehiculo implements Ventas {
     return marca + "\t" + modelo + "\t" + patente + "\t" + kilometraje + "Km\t" + cantPuertas
         + " puertas";
   }
+}    
 }
-
-
-
+// ==================== SUBCLASE AUTO ====================
+class Auto extends Vehiculo {
+private int numeroPuertas;
+private boolean esAutomatico;
     
+public Auto(String marca, String modelo, int año, String patente, double kilometraje, int numeroPuertas, boolean esAutomatico, int cantPuertas) 
+{
+super(marca, modelo, añio, patente, "Auto", kilometraje);
+this.numeroPuertas = numeroPuertas;
+this.esAutomatico = esAutomatico;
+    }
+    
+public int getNumeroPuertas() { return numeroPuertas; }
+public void setNumeroPuertas(int numeroPuertas) { this.numeroPuertas = numeroPuertas; }
+if (cantPuertas < 3) {
+throw new PuertasInsuficientesException(
+"Error: Un auto debe tener al menos 3 puertas. Puertas recibidas: " + cantPuertas);
+    }
+this.cantPuertas = cantPuertas;
+  }
+    public boolean isEsAutomatico() { return esAutomatico; }
+    public void setEsAutomatico(boolean esAutomatico) { this.esAutomatico = esAutomatico; }
+    
+    // Sobreescritura de método abstracto
+    @Override
+    public double calcularCostoMantenimiento() {
+        double costoBase = 5000.0;
+        double costoKm = getKilometraje() * 0.5;
+        double costoTransmision = esAutomatico ? 2000.0 : 1000.0;
+        return costoBase + costoKm + costoTransmision;
+    }
 }
