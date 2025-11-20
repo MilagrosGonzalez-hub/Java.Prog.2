@@ -1,0 +1,630 @@
+SISTEMA DE GESTIÓN DE FLOTA VEHICULAR - EMPRESA DE TRANSPORTE "LOGÍSTICA EXPRESS S.A."
+ * 
+ * Contexto: Este sistema está diseñado para una empresa de transporte y logística que necesita
+ * administrar su flota de vehículos (autos para ejecutivos y camiones para carga).
+ * Permite realizar operaciones CRUD para mantener un registro actualizado de todos los vehículos,
+ * controlar mantenimientos, kilometrajes y costos operativos.
+
+import java.util.*;
+import java.util.stream.*;
+
+// ==================== EXCEPCIÓN PERSONALIZADA ====================
+class PatenteInvalidaException extends Exception {
+    public PatenteInvalidaException(String mensaje) {
+        super(mensaje);
+    }
+}
+
+// ==================== INTERFAZ ====================
+interface Mantenible {
+    double calcularCostoMantenimiento();
+    String getIdentificador();
+}
+
+// ==================== CLASE BASE VEHÍCULO ====================
+abstract class Vehiculo implements Mantenible {
+    // Atributos privados (encapsulamiento)
+    private String marca;
+    private String modelo;
+    private int anio;
+    private String patente;
+    private String tipo;
+    private double kilometraje;
+    
+    // Constructor parametrizado
+    public Vehiculo(String marca, String modelo, int anio, String patente, String tipo, double kilometraje) {
+        this.marca = marca;
+        this.modelo = modelo;
+        this.anio = anio;
+        this.patente = patente.toUpperCase();
+        this.tipo = tipo;
+        this.kilometraje = kilometraje;
+    }
+    
+    // Getters y Setters
+    public String getMarca() { return marca; }
+    public void setMarca(String marca) { this.marca = marca; }
+    
+    public String getModelo() { return modelo; }
+    public void setModelo(String modelo) { this.modelo = modelo; }
+    
+    public int getAnio() { return anio; }
+    public void setAnio(int anio) { this.anio = anio; }
+    
+    public String getPatente() { return patente; }
+    public void setPatente(String patente) { this.patente = patente.toUpperCase(); }
+    
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+    
+    public double getKilometraje() { return kilometraje; }
+    public void setKilometraje(double kilometraje) { this.kilometraje = kilometraje; }
+    
+    // Redefinición de equals() y hashCode() basados en patente
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        Vehiculo vehiculo = (Vehiculo) obj;
+        return patente.equalsIgnoreCase(vehiculo.patente);
+    }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(patente.toUpperCase());
+    }
+    
+    // Método sobrecargado - versión 1
+    public void mostrarInfo() {
+        System.out.printf("Tipo: %s | Marca: %s | Modelo: %s | Año: %d | Patente: %s | Km: %.2f%n",
+                tipo, marca, modelo, anio, patente, kilometraje);
+    }
+    
+    // Método sobrecargado - versión 2
+    public void mostrarInfo(boolean detallado) {
+        if (detallado) {
+            System.out.println("╔════════════════════════════════════════════╗");
+            System.out.printf("║ INFORMACIÓN DETALLADA DEL VEHÍCULO%n");
+            System.out.println("╠════════════════════════════════════════════╣");
+            System.out.printf("║ Tipo:       %-30s ║%n", tipo);
+            System.out.printf("║ Marca:      %-30s ║%n", marca);
+            System.out.printf("║ Modelo:     %-30s ║%n", modelo);
+            System.out.printf("║ Año:        %-30d ║%n", anio);
+            System.out.printf("║ Patente:    %-30s ║%n", patente);
+            System.out.printf("║ Kilometraje: %-29.2f ║%n", kilometraje);
+            System.out.printf("║ Costo Mant.: $%-28.2f ║%n", calcularCostoMantenimiento());
+            System.out.println("╚════════════════════════════════════════════╝");
+        } else {
+            mostrarInfo();
+        }
+    }
+    
+    @Override
+    public String getIdentificador() {
+        return patente;
+    }
+    
+    // Método abstracto que será sobreescrito por subclases
+    public abstract double calcularCostoMantenimiento();
+}
+
+// ==================== SUBCLASE AUTO ====================
+class Auto extends Vehiculo {
+    private int numeroPuertas;
+    private boolean esAutomatico;
+    
+    public Auto(String marca, String modelo, int anio, String patente, double kilometraje, 
+                int numeroPuertas, boolean esAutomatico) {
+        super(marca, modelo, anio, patente, "Auto", kilometraje);
+        this.numeroPuertas = numeroPuertas;
+        this.esAutomatico = esAutomatico;
+    }
+    
+    public int getNumeroPuertas() { return numeroPuertas; }
+    public void setNumeroPuertas(int numeroPuertas) { this.numeroPuertas = numeroPuertas; }
+    
+    public boolean isEsAutomatico() { return esAutomatico; }
+    public void setEsAutomatico(boolean esAutomatico) { this.esAutomatico = esAutomatico; }
+    
+    // Sobreescritura del método abstracto
+    @Override
+    public double calcularCostoMantenimiento() {
+        double costoBase = 5000.0;
+        double costoKm = getKilometraje() * 0.5;
+        double costoTransmision = esAutomatico ? 2000.0 : 1000.0;
+        return costoBase + costoKm + costoTransmision;
+    }
+}
+
+// ==================== SUBCLASE CAMION ====================
+class Camion extends Vehiculo {
+    private double capacidadCarga; // en toneladas
+    private int numeroEjes;
+    
+    public Camion(String marca, String modelo, int anio, String patente, double kilometraje,
+                  double capacidadCarga, int numeroEjes) {
+        super(marca, modelo, anio, patente, "Camión", kilometraje);
+        this.capacidadCarga = capacidadCarga;
+        this.numeroEjes = numeroEjes;
+    }
+    
+    public double getCapacidadCarga() { return capacidadCarga; }
+    public void setCapacidadCarga(double capacidadCarga) { this.capacidadCarga = capacidadCarga; }
+    
+    public int getNumeroEjes() { return numeroEjes; }
+    public void setNumeroEjes(int numeroEjes) { this.numeroEjes = numeroEjes; }
+    
+    // Sobreescritura del método abstracto
+    @Override
+    public double calcularCostoMantenimiento() {
+        double costoBase = 15000.0;
+        double costoKm = getKilometraje() * 1.2;
+        double costoCarga = capacidadCarga * 1000;
+        double costoEjes = numeroEjes * 800;
+        return costoBase + costoKm + costoCarga + costoEjes;
+    }
+}
+
+// ==================== CLASE PRINCIPAL ====================
+public class SistemaGestionVehiculos {
+    // Variable global - ArrayList principal para almacenar vehículos
+    private static ArrayList<Vehiculo> flota = new ArrayList<>();
+    private static Scanner scanner = new Scanner(System.in);
+    
+    public static void main(String[] args) {
+        cargarDatosPrueba(); // Carga datos iniciales para testing
+        
+        int opcion;
+        
+        do {
+            mostrarMenu();
+            opcion = leerOpcion();
+            
+            switch (opcion) {
+                case 1:
+                    crearVehiculo();
+                    break;
+                case 2:
+                    listarVehiculos();
+                    break;
+                case 3:
+                    buscarVehiculo();
+                    break;
+                case 4:
+                    actualizarVehiculo();
+                    break;
+                case 5:
+                    eliminarVehiculo();
+                    break;
+                case 6:
+                    buscarRecursivo();
+                    break;
+                case 7:
+                    filtrarVehiculos();
+                    break;
+                case 8:
+                    calcularCostosMantenimiento();
+                    break;
+                case 9:
+                    System.out.println("\n¡Gracias por usar el Sistema de Gestión de Flota!");
+                    System.out.println("Saliendo del sistema...");
+                    break;
+                default:
+                    System.out.println("\n❌ Opción inválida. Intente nuevamente.");
+            }
+            
+            if (opcion != 9) {
+                esperarEnter();
+            }
+            
+        } while (opcion != 9);
+        
+        scanner.close();
+    }
+    
+    // ==================== MÉTODO 1: CREAR VEHÍCULO ====================
+    private static void crearVehiculo() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     REGISTRAR NUEVO VEHÍCULO          ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        try {
+            System.out.println("\nSeleccione el tipo de vehículo:");
+            System.out.println("1. Auto");
+            System.out.println("2. Camión");
+            System.out.print("Opción: ");
+            int tipo = scanner.nextInt();
+            scanner.nextLine(); // Limpiar buffer
+            
+            if (tipo != 1 && tipo != 2) {
+                System.out.println("❌ Tipo de vehículo inválido.");
+                return;
+            }
+            
+            System.out.print("Marca: ");
+            String marca = scanner.nextLine();
+            
+            System.out.print("Modelo: ");
+            String modelo = scanner.nextLine();
+            
+            System.out.print("Año: ");
+            int anio = scanner.nextInt();
+            scanner.nextLine();
+            
+            System.out.print("Patente (ej: ABC123): ");
+            String patente = scanner.nextLine();
+            
+            // Validar patente
+            validarPatente(patente);
+            
+            System.out.print("Kilometraje: ");
+            double kilometraje = scanner.nextDouble();
+            scanner.nextLine();
+            
+            Vehiculo nuevoVehiculo = null;
+            
+            if (tipo == 1) {
+                System.out.print("Número de puertas: ");
+                int puertas = scanner.nextInt();
+                scanner.nextLine();
+                
+                System.out.print("¿Es automático? (S/N): ");
+                String respuesta = scanner.nextLine();
+                boolean automatico = respuesta.equalsIgnoreCase("S");
+                
+                nuevoVehiculo = new Auto(marca, modelo, anio, patente, kilometraje, puertas, automatico);
+            } else if (tipo == 2) {
+                System.out.print("Capacidad de carga (toneladas): ");
+                double capacidad = scanner.nextDouble();
+                
+                System.out.print("Número de ejes: ");
+                int ejes = scanner.nextInt();
+                scanner.nextLine();
+                
+                nuevoVehiculo = new Camion(marca, modelo, anio, patente, kilometraje, capacidad, ejes);
+            }
+            
+            // Verificar si ya existe
+            if (flota.contains(nuevoVehiculo)) {
+                System.out.println("\n❌ Ya existe un vehículo con esa patente.");
+            } else {
+                flota.add(nuevoVehiculo);
+                System.out.println("\n✅ Vehículo registrado exitosamente.");
+            }
+            
+        } catch (PatenteInvalidaException e) {
+            System.out.println("\n❌ Error: " + e.getMessage());
+        } catch (InputMismatchException e) {
+            System.out.println("\n❌ Error: Entrada inválida.");
+            scanner.nextLine(); // Limpiar buffer
+        } catch (Exception e) {
+            System.out.println("\n❌ Error inesperado: " + e.getMessage());
+        } finally {
+            System.out.println("Operación de registro finalizada.");
+        }
+    }
+    
+    // ==================== MÉTODO 2: LISTAR VEHÍCULOS ====================
+    private static void listarVehiculos() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     LISTADO DE VEHÍCULOS              ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        if (flota.isEmpty()) {
+            System.out.println("\n⚠️  No hay vehículos registrados.");
+            return;
+        }
+        
+        System.out.printf("%nTotal de vehículos: %d%n%n", flota.size());
+        
+        // Uso de lambda con forEach
+        int[] contador = {1};
+        flota.forEach(vehiculo -> {
+            System.out.printf("%d. ", contador[0]++);
+            vehiculo.mostrarInfo();
+        });
+    }
+    
+    // ==================== MÉTODO 3: BUSCAR VEHÍCULO ====================
+    private static void buscarVehiculo() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     BUSCAR VEHÍCULO POR PATENTE       ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        System.out.print("\nIngrese la patente: ");
+        String patente = scanner.nextLine().toUpperCase();
+        
+        // Uso de lambda con filter y findFirst
+        Optional<Vehiculo> resultado = flota.stream()
+            .filter(v -> v.getPatente().equalsIgnoreCase(patente))
+            .findFirst();
+        
+        if (resultado.isPresent()) {
+            System.out.println("\n✅ Vehículo encontrado:");
+            resultado.get().mostrarInfo(true);
+        } else {
+            System.out.println("\n❌ No se encontró ningún vehículo con esa patente.");
+        }
+    }
+    
+    // ==================== MÉTODO 4: ACTUALIZAR VEHÍCULO (PASO POR REFERENCIA) ====================
+    private static void actualizarVehiculo() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     ACTUALIZAR VEHÍCULO               ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        System.out.print("\nIngrese la patente del vehículo: ");
+        String patente = scanner.nextLine().toUpperCase();
+        
+        Optional<Vehiculo> resultado = flota.stream()
+            .filter(v -> v.getPatente().equalsIgnoreCase(patente))
+            .findFirst();
+        
+        if (resultado.isPresent()) {
+            Vehiculo vehiculo = resultado.get();
+            System.out.println("\nVehículo actual:");
+            vehiculo.mostrarInfo();
+            
+            // Demostración de paso por referencia: modificamos el objeto directamente
+            modificarVehiculo(vehiculo);
+            
+            System.out.println("\n✅ Vehículo actualizado correctamente.");
+            System.out.println("\nVehículo modificado:");
+            vehiculo.mostrarInfo();
+        } else {
+            System.out.println("\n❌ No se encontró el vehículo.");
+        }
+    }
+    
+    // Método que demuestra paso por referencia
+    private static void modificarVehiculo(Vehiculo v) {
+        System.out.println("\n¿Qué desea actualizar?");
+        System.out.println("1. Kilometraje");
+        System.out.println("2. Marca");
+        System.out.println("3. Modelo");
+        System.out.print("Opción: ");
+        int opcion = scanner.nextInt();
+        scanner.nextLine();
+        
+        switch (opcion) {
+            case 1:
+                System.out.print("Nuevo kilometraje: ");
+                double km = scanner.nextDouble();
+                scanner.nextLine();
+                v.setKilometraje(km);
+                break;
+            case 2:
+                System.out.print("Nueva marca: ");
+                String marca = scanner.nextLine();
+                v.setMarca(marca);
+                break;
+            case 3:
+                System.out.print("Nuevo modelo: ");
+                String modelo = scanner.nextLine();
+                v.setModelo(modelo);
+                break;
+            default:
+                System.out.println("Opción inválida.");
+        }
+    }
+    
+    // ==================== MÉTODO 5: ELIMINAR VEHÍCULO ====================
+    private static void eliminarVehiculo() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     ELIMINAR VEHÍCULO                 ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        System.out.print("\nIngrese la patente del vehículo: ");
+        String patente = scanner.nextLine().toUpperCase();
+        
+        // Uso de lambda con removeIf
+        boolean eliminado = flota.removeIf(v -> v.getPatente().equalsIgnoreCase(patente));
+        
+        if (eliminado) {
+            System.out.println("\n✅ Vehículo eliminado exitosamente.");
+        } else {
+            System.out.println("\n❌ No se encontró el vehículo.");
+        }
+    }
+    
+    // ==================== MÉTODO RECURSIVO: BUSCAR VEHÍCULO ====================
+    private static void buscarRecursivo() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     BÚSQUEDA RECURSIVA                ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        System.out.print("\nIngrese la patente: ");
+        String patente = scanner.nextLine().toUpperCase();
+        
+        Vehiculo resultado = buscarVehiculoRecursivo(flota, patente, 0);
+        
+        if (resultado != null) {
+            System.out.println("\n✅ Vehículo encontrado (búsqueda recursiva):");
+            resultado.mostrarInfo(true);
+        } else {
+            System.out.println("\n❌ No se encontró el vehículo.");
+        }
+    }
+    
+    // Función recursiva para buscar vehículo
+    private static Vehiculo buscarVehiculoRecursivo(ArrayList<Vehiculo> lista, String patente, int indice) {
+        // Caso base: llegamos al final de la lista
+        if (indice >= lista.size()) {
+            return null;
+        }
+        
+        // Caso base: encontramos el vehículo
+        if (lista.get(indice).getPatente().equalsIgnoreCase(patente)) {
+            return lista.get(indice);
+        }
+        
+        // Caso recursivo: seguir buscando
+        return buscarVehiculoRecursivo(lista, patente, indice + 1);
+    }
+    
+    // ==================== MÉTODO ADICIONAL: FILTRAR VEHÍCULOS ====================
+    private static void filtrarVehiculos() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║     FILTRAR VEHÍCULOS                 ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        System.out.println("\n1. Por tipo");
+        System.out.println("2. Por año mayor a...");
+        System.out.println("3. Por kilometraje menor a...");
+        System.out.print("Opción: ");
+        int opcion = scanner.nextInt();
+        scanner.nextLine();
+        
+        List<Vehiculo> filtrados = null;
+        
+        // Uso de if-else if-else
+        if (opcion == 1) {
+            System.out.print("Tipo (Auto/Camión): ");
+            String tipo = scanner.nextLine();
+            // Uso de lambda con filter
+            filtrados = flota.stream()
+                .filter(v -> v.getTipo().equalsIgnoreCase(tipo))
+                .collect(Collectors.toList());
+        } else if (opcion == 2) {
+            System.out.print("Año mínimo: ");
+            int anio = scanner.nextInt();
+            scanner.nextLine();
+            filtrados = flota.stream()
+                .filter(v -> v.getAnio() > anio)
+                .collect(Collectors.toList());
+        } else if (opcion == 3) {
+            System.out.print("Kilometraje máximo: ");
+            double km = scanner.nextDouble();
+            scanner.nextLine();
+            filtrados = flota.stream()
+                .filter(v -> v.getKilometraje() < km)
+                .collect(Collectors.toList());
+        } else {
+            System.out.println("Opción inválida.");
+            return;
+        }
+        
+        if (filtrados != null && !filtrados.isEmpty()) {
+            System.out.printf("%n✅ Se encontraron %d vehículo(s):%n%n", filtrados.size());
+            
+            // Uso de for mejorado
+            for (Vehiculo v : filtrados) {
+                v.mostrarInfo();
+            }
+        } else {
+            System.out.println("\n⚠️  No se encontraron vehículos con ese criterio.");
+        }
+    }
+    
+    // ==================== MÉTODO ADICIONAL: CALCULAR COSTOS ====================
+    private static void calcularCostosMantenimiento() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║   COSTOS DE MANTENIMIENTO             ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        
+        if (flota.isEmpty()) {
+            System.out.println("\n⚠️  No hay vehículos registrados.");
+            return;
+        }
+        
+        double costoTotal = 0;
+        int contador = 0;
+        
+        // Uso de while con break y continue
+        while (contador < flota.size()) {
+            Vehiculo v = flota.get(contador);
+            
+            // Si el vehículo tiene menos de 10000 km, lo saltamos (continue)
+            if (v.getKilometraje() < 10000) {
+                contador++;
+                continue;
+            }
+            
+            double costo = v.calcularCostoMantenimiento();
+            System.out.printf("%s %s (%s): $%.2f%n", 
+                v.getTipo(), v.getMarca(), v.getPatente(), costo);
+            costoTotal += costo;
+            
+            contador++;
+            
+            // Si llegamos a 10 vehículos, salimos (break)
+            if (contador >= 10) {
+                System.out.println("\n(Mostrando solo los primeros 10 vehículos)");
+                break;
+            }
+        }
+        
+        System.out.printf("%n💰 Costo total estimado: $%.2f%n", costoTotal);
+        
+        // Uso de lambda con anyMatch
+        boolean hayVehiculosCostosos = flota.stream()
+            .anyMatch(v -> v.calcularCostoMantenimiento() > 50000);
+        
+        if (hayVehiculosCostosos) {
+            System.out.println("⚠️  Hay vehículos con costos de mantenimiento superiores a $50,000");
+        }
+    }
+    
+    // ==================== MÉTODOS AUXILIARES ====================
+    private static void mostrarMenu() {
+        System.out.println("\n╔════════════════════════════════════════╗");
+        System.out.println("║   SISTEMA DE GESTIÓN DE FLOTA         ║");
+        System.out.println("║   Logística Express S.A.              ║");
+        System.out.println("╠════════════════════════════════════════╣");
+        System.out.println("║ 1. Registrar nuevo vehículo           ║");
+        System.out.println("║ 2. Listar todos los vehículos         ║");
+        System.out.println("║ 3. Buscar vehículo por patente        ║");
+        System.out.println("║ 4. Actualizar vehículo                ║");
+        System.out.println("║ 5. Eliminar vehículo                  ║");
+        System.out.println("║ 6. Búsqueda recursiva                 ║");
+        System.out.println("║ 7. Filtrar vehículos                  ║");
+        System.out.println("║ 8. Calcular costos de mantenimiento   ║");
+        System.out.println("║ 9. Salir                              ║");
+        System.out.println("╚════════════════════════════════════════╝");
+        System.out.print("Seleccione una opción: ");
+    }
+    
+    private static int leerOpcion() {
+        int opcion = -1;
+        
+        // Uso de do-while
+        do {
+            try {
+                opcion = scanner.nextInt();
+                scanner.nextLine(); // Limpiar buffer
+                break;
+            } catch (InputMismatchException e) {
+                System.out.print("❌ Entrada inválida. Ingrese un número: ");
+                scanner.nextLine();
+            }
+        } while (true);
+        
+        return opcion;
+    }
+    
+    private static void validarPatente(String patente) throws PatenteInvalidaException {
+        // Uso de contains, length
+        if (patente == null || patente.length() < 6 || patente.length() > 7) {
+            throw new PatenteInvalidaException("La patente debe tener entre 6 y 7 caracteres.");
+        }
+        
+        // Uso de substring para validar formato (3 letras + 3 números o formato nuevo)
+        String letras = patente.substring(0, 3);
+        if (!letras.matches("[A-Za-z]+")) {
+            throw new PatenteInvalidaException("Los primeros 3 caracteres deben ser letras.");
+        }
+    }
+    
+    private static void esperarEnter() {
+        System.out.print("\nPresione ENTER para continuar...");
+        scanner.nextLine();
+    }
+    
+    private static void cargarDatosPrueba() {
+        flota.add(new Auto("Toyota", "Corolla", 2020, "ABC123", 45000, 4, true));
+        flota.add(new Auto("Ford", "Focus", 2019, "DEF456", 38000, 4, false));
+        flota.add(new Camion("Mercedes-Benz", "Actros", 2021, "GHI789", 120000, 25.5, 3));
+        flota.add(new Camion("Scania", "R450", 2022, "JKL012", 85000, 30.0, 4));
+        flota.add(new Auto("Honda", "Civic", 2023, "MNO345", 15000, 4, true));
+    }
+}
