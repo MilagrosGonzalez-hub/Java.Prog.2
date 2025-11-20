@@ -1,0 +1,218 @@
+-------------MENU VETERINARIA---------
+package Parciales.Parcial2025.Segundo.Veterinaria;
+
+public class Menu {
+
+  // Mostrar menú principal con gráficos
+  public void mostrarMenuPrincipal() {
+    System.out.println("\n" + "=".repeat(50));
+    System.out.println("🐦 SISTEMA DE INVENTARIO DE ANIMALES 🐱");
+    System.out.println("=".repeat(50));
+    System.out.println("┌──────────────────────────────────────────┐");
+    System.out.println("│  1 │  Agregar Animal Avícola             │");
+    System.out.println("│  2 │  Agregar Animal Cazador             │");
+    System.out.println("│  3 │  Listar todos los animales          │");
+    System.out.println("│  4 │  Buscar animal por nombre           │");
+    System.out.println("│  5 │  Eliminar animal                    │");
+    System.out.println("│  6 │  Ver cantidad de animales           │");
+    System.out.println("│  7 │  Actualizar Animal Avícola          │");
+    System.out.println("│  8 │  Actualizar Animal Cazador          │");
+    System.out.println("└──────────────────────────────────────────┘");
+    System.out.print("➤ Seleccione cualquier letra para finalizar: ");
+  }
+}
+-------ACÁ TERMINA---------
+------- ANIMAL ---------
+package Parciales.Parcial2025.Segundo.Veterinaria;
+
+abstract class Animalito {
+  protected String especie;
+  protected int edad;
+  protected String nombre;
+  protected double peso;
+
+  public Animalito(String especie, int edad, String nombre, double peso) {
+    this.especie = especie.toUpperCase();
+    this.edad = edad;
+    this.nombre = nombre.toUpperCase();
+    this.peso = peso;
+  }
+
+  // Getters
+  public String getEspecie() {
+    return especie;
+  }
+
+  public int getEdad() {
+    return edad;
+  }
+
+  public String getNombre() {
+    return nombre;
+  }
+
+  public double getPeso() {
+    return peso;
+  }
+
+  // Setters
+  public void setEspecie(String especie) {
+    this.especie = especie;
+  }
+
+  public void setEdad(int edad) {
+    this.edad = edad;
+  }
+
+  public void setNombre(String nombre) {
+    this.nombre = nombre;
+  }
+
+  public void setPeso(double peso) {
+    this.peso = peso;
+  }
+
+  public abstract String verTipoDeAnimal();
+
+  // Método toString
+  @Override
+  public String toString() {
+    return especie + "\t" + edad + " años\t" + nombre + "\t" + peso + "Kg";
+  }
+
+  // Método equals basado en nombre
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null || getClass() != obj.getClass())
+      return false;
+    Animalito animalito = (Animalito) obj;
+    return nombre.equals(animalito.nombre);
+  }
+
+  // Método hashCode basado en nombre
+  @Override
+  public int hashCode() {
+    return nombre.hashCode();
+  }
+}
+--------- ACÁ TERMINA-------
+------ COSTO DEL CUIDADO ------
+package Parciales.Parcial2025.Segundo.Veterinaria;
+
+public interface Cuidados {
+
+  /**
+   * Calcula el costo de cuidado del animal basado en el costo base y la edad
+   * actual
+   * 
+   */
+  double calcularCostoCuidado(double costoBase, int edadAnimal);
+}
+------- ACÁ TERMINA ------
+-------- SI EL ANIMAL ES UN AVE------
+package Parciales.Parcial2025.Segundo.Veterinaria;
+
+class Avicolas extends Animalito implements Cuidados {
+  private String tipoPlumaje;
+
+  public Avicolas(String especie, int edad, String nombre, double peso, String tipoPlumaje)
+      throws PesoInsuficienteException {
+    super(especie, edad, nombre, peso);
+
+    // Validar que el animal avícola tenga al menos 1kg
+    if (peso < 1.0) {
+      throw new PesoInsuficienteException(
+          "Error: Un animal avícola debe tener al menos 1kg de peso. Peso recibido: " + peso + "kg");
+    }
+
+    this.tipoPlumaje = tipoPlumaje;
+  }
+
+  // Getter
+  public String getTipoPlumaje() {
+    return tipoPlumaje;
+  }
+
+  // Implementación de la interface Cuidados
+  @Override
+  public double calcularCostoCuidado(double costoBase, int edadAnimal) {
+    // Calcular incremento por años (animales mayores necesitan más cuidado)
+    double incrementoEdad = this.edad * 0.05; // 5% por año
+
+    // Calcular porcentaje adicional según tipo de plumaje
+    double porcentajePlumaje;
+    if (tipoPlumaje.equalsIgnoreCase("EXOTICO")) {
+      porcentajePlumaje = 0.4;
+    } else if (tipoPlumaje.equalsIgnoreCase("COLORIDO")) {
+      porcentajePlumaje = 0.3;
+    } else {
+      porcentajePlumaje = 0.2; // Valor por defecto para plumaje común
+    }
+
+    // Calcular costo final
+    double costoConEdad = costoBase * (1 + incrementoEdad);
+    return costoConEdad * (1 + porcentajePlumaje);
+  }
+
+  // Setter
+  public void setTipoPlumaje(String tipoPlumaje) {
+    this.tipoPlumaje = tipoPlumaje;
+  }
+
+  // Implementación del método abstracto
+  @Override
+  public String verTipoDeAnimal() {
+    return "🐦";
+  }
+
+  // Método toString
+  @Override
+  public String toString() {
+    return especie + "\t" + edad + " años\t" + nombre + "\t" + peso + "kg\t" + tipoPlumaje
+        + " plumaje";
+  }
+}
+------- ACÁ TERMINA -------
+------ CASERAS -------
+package Parciales.Parcial2025.Segundo.Veterinaria;
+
+class Caceras extends Animalito implements Cuidados {
+
+  // Constructor con parámetros
+  public Caceras(String especie, int edad, String nombre, double peso) {
+    super(especie, edad, nombre, peso);
+  }
+
+  // Implementación de la interface Cuidados
+  @Override
+  public double calcularCostoCuidado(double costoBase, int edadAnimal) {
+    // Calcular incremento por años (animales cazadores envejecen más rápido)
+    double incrementoEdad = this.edad * 0.08; // 8% por año para cazadores
+
+    // Los animales cazadores tienen un descuento por ser más independientes
+    double descuentoCazador = 0.15; // 15% de descuento
+
+    // Calcular costo final
+    double costoConEdad = costoBase * (1 + incrementoEdad);
+    return costoConEdad * (1 - descuentoCazador);
+  }
+
+  // Implementación del método abstracto
+  @Override
+  public String verTipoDeAnimal() {
+    return "🐱";
+  }
+
+  // Método toString
+  @Override
+  public String toString() {
+    return especie + "\t" + edad + " años\t" + nombre + "\t" + peso + "kg";
+  }
+}
+Caceras modela un animal cazador dentro de un sistema veterinario. Tiene características específicas:
+- Envejece más rápido.
+- Es más independiente (por eso el descuento).
+- Tiene una forma personalizada de calcular su costo de cuidado.
+-------- ACÁ TERMINA -------
