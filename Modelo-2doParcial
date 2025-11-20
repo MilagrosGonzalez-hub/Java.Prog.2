@@ -104,7 +104,7 @@ abstract class Vehiculo implements Mantenible {
         return patente;
     }
     
-    // Método abstracto que será sobreescrito por subclases
+    // Método abstracto que va a ser sobreescrito por subclases
     public abstract double calcularCostoMantenimiento();
 }
 
