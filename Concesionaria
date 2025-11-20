@@ -1,0 +1,392 @@
+CAMION 
+package Concesionaria;
+
+/**
+ * Representa un vehículo de tipo Camión. Hereda de la clase `Vehiculo` y también implementa la
+ * interfaz `Mantenimiento`, lo que le obliga a definir cómo se calcula su costo de mantenimiento.
+ */
+public class Camion extends Vehiculo implements Mantenimiento {
+    // Atributo específico de la clase Camion.
+    private double capacidadDeCarga;
+
+    /**
+     * Constructor para crear un nuevo Camión. Llama al constructor de la clase padre (`Vehiculo`)
+     * para inicializar los atributos comunes.
+     * 
+     * @param capacidadDeCarga La capacidad de carga del camión en toneladas.
+     * @throws PatenteInvalidaException si la patente es inválida (propagada desde el constructor
+     *         padre).
+     */
+    public Camion(String marca, String modelo, int anio, String patente, double kilometraje,
+            double capacidadDeCarga) throws PatenteInvalidaException {
+        super(marca, modelo, anio, patente, kilometraje);
+        this.capacidadDeCarga = capacidadDeCarga;
+    }
+
+    /**
+     * Implementación del método abstracto `getTipo` de la clase `Vehiculo`. Devuelve una cadena que
+     * identifica a esta clase como un "Camión".
+     */
+    @Override
+    public String getTipo() {
+        return "Camión";
+    }
+
+    /**
+     * Implementación del método de la interfaz `Mantenimiento`. Calcula el costo de mantenimiento
+     * específico para un camión, aplicando un 50% extra.
+     */
+    @Override
+    public double calcularCostoMantenimiento(double costoPorKm) {
+        return getKilometraje() * costoPorKm * 1.5; // 50% extra para camiones
+    }
+------ ACÁ TERMINA------
+--------- AUTO ------
+package Concesionaria;
+
+/**
+ * Representa un vehículo de tipo Auto. Hereda de la clase `Vehiculo` y también implementa la
+ * interfaz `Mantenimiento`, lo que le obliga a definir cómo se calcula su costo de mantenimiento.
+ */
+public class Auto extends Vehiculo implements Mantenimiento {
+    // Atributo específico de la clase Auto.
+    private int numeroDePuertas;
+
+    /**
+     * Constructor para crear un nuevo Auto. Llama al constructor de la clase padre (`Vehiculo`)
+     * para inicializar los atributos comunes.
+     * 
+     * @param numeroDePuertas El número de puertas del auto.
+     * @throws PatenteInvalidaException si la patente es inválida (propagada desde el constructor
+     *         padre).
+     */
+    public Auto(String marca, String modelo, int anio, String patente, double kilometraje,
+            int numeroDePuertas) throws PatenteInvalidaException {
+        super(marca, modelo, anio, patente, kilometraje);
+        this.numeroDePuertas = numeroDePuertas;
+    }
+
+    /**
+     * Implementación del método abstracto `getTipo` de la clase `Vehiculo`. Devuelve una cadena que
+     * identifica a esta clase como un "Auto".
+     */
+    @Override
+    public String getTipo() {
+        return "Auto";
+    }
+
+    /**
+     * Implementación del método de la interfaz `Mantenimiento`. Calcula el costo de mantenimiento
+     * específico para un auto, aplicando un 10% extra.
+     */
+    @Override
+    public double calcularCostoMantenimiento(double costoPorKm) {
+        return getKilometraje() * costoPorKm * 1.1; // 10% extra para autos
+    }
+}
+------- ACÁ TERMINA-------
+------- ESTE ES MI MAIN -----
+package Concesionaria;
+
+import java.util.Scanner;
+
+/**
+ * La clase Main es el punto de entrada de la aplicación de la concesionaria. Se encarga de
+ * inicializar los componentes principales (servicios, menú, scanner) y de ejecutar el bucle
+ * principal que procesa las opciones del usuario.
+ */
+public class Main {
+
+    /**
+     * El método main es el corazón del programa. Mantiene un bucle activo que muestra el menú, lee
+     * la opción del usuario y delega la acción correspondiente al `FlotaService`.
+     */
+    public static void main(String[] args) {
+        // Se crean las instancias de los objetos necesarios para que el programa funcione.
+        Scanner scanner = new Scanner(System.in);
+        MenuConsola menu = new MenuConsola(scanner);
+        FlotaService flotaService = new FlotaService(scanner, menu);
+
+        int opcion;
+        do {
+            menu.mostrarMenu(); // Muestra el menú de opciones.
+            // Lee la opción del usuario de forma segura (manejando errores de formato).
+            opcion = menu.leerOpcion();
+
+            switch (opcion) {
+                case 1:
+                    flotaService.crearVehiculo();
+                    break;
+                case 2:
+                    flotaService.listarVehiculos();
+                    break;
+                case 3:
+                    flotaService.actualizarVehiculo();
+                    break;
+                case 4:
+                    flotaService.eliminarVehiculo();
+                    break;
+                case 5:
+                    flotaService.buscarVehiculoRecursivo();
+                    break;
+                case 6:
+                    flotaService.contarVehiculosPorTipo();
+                    break;
+                case 7:
+                    System.out.println("Saliendo del sistema...");
+                    break;
+                default:
+                    System.out.println("Opción no válida. Intente de nuevo.");
+            }
+            System.out.println(); // Espacio para legibilidad
+        } while (opcion != 7);
+
+        // Se cierra el scanner para liberar recursos del sistema antes de terminar.
+        scanner.close();
+    }
+}
+------- ACA TERMINA ------
+------- MANTENIMIENTO-----
+package Concesionaria;
+
+/**
+ * La interfaz `Mantenimiento` define un contrato para las clases que la implementen. Cualquier
+ * clase que represente un tipo de vehículo que requiera un cálculo de costo de mantenimiento debe
+ * implementar esta interfaz. Esto asegura que todas esas clases tendrán un método
+ * `calcularCostoMantenimiento`.
+ */
+public interface Mantenimiento {
+    /**
+     * Calcula el costo de mantenimiento del vehículo basado en un costo por kilómetro.
+     */
+    double calcularCostoMantenimiento(double costoPorKm);
+}
+------ACÁ TERMINA ---------
+------- MENÚ CONSOLA -----
+package Concesionaria;
+
+import java.util.Scanner;
+
+/**
+ * Clase dedicada a manejar la interfaz de usuario en la consola. Su responsabilidad es mostrar el
+ * menú y leer las entradas del usuario de forma robusta, evitando errores por entradas inválidas.
+ */
+public class MenuConsola {
+
+    private Scanner scanner;
+
+    /**
+     * Constructor que recibe una instancia de Scanner para leer desde la consola.
+     */
+    public MenuConsola(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    /**
+     * Imprime el menú principal de opciones en la consola.
+     */
+    public void mostrarMenu() {
+        System.out.println("--- Sistema de Gestión de Flota ---");
+        System.out.println("1. Registrar nuevo vehículo (Create)");
+        System.out.println("2. Listar todos los vehículos (Read)");
+        System.out.println("3. Actualizar kilometraje de un vehículo (Update)");
+        System.out.println("4. Eliminar un vehículo (Delete)");
+        System.out.println("5. Buscar vehículo por patente (Recursivo)");
+        System.out.println("6. Contar vehículos por tipo (Lambda)");
+        System.out.println("7. Salir");
+        System.out.print("Seleccione una opción: ");
+    }
+
+    /**
+     * Lee la entrada del usuario y la convierte a un entero. Incluye un bucle para reintentar en
+     * caso de que el usuario ingrese texto no numérico o una línea vacía.
+     */
+    public int leerOpcion() {
+        while (true) {
+            String linea = scanner.nextLine();
+            if (linea.isEmpty()) {
+                System.out.print("Entrada vacía. Por favor, ingrese un número: ");
+                continue;
+            }
+            try {
+                return Integer.parseInt(linea);
+            } catch (NumberFormatException e) {
+                System.out.print("Entrada inválida. Por favor, ingrese un número: ");
+            }
+        }
+    }
+
+    /**
+     * Lee la entrada del usuario y la convierte a un double. Similar a `leerOpcion`, maneja
+     * entradas inválidas para evitar que el programa se detenga por un error.
+     */
+    public double leerDouble() {
+        while (true) {
+            String linea = scanner.nextLine();
+            if (linea.isEmpty()) {
+                System.out.print("Entrada vacía. Por favor, ingrese un número: ");
+                continue;
+            }
+            try {
+                return Double.parseDouble(linea);
+            } catch (NumberFormatException e) {
+                System.out.print("Entrada inválida. Por favor, ingrese un número: ");
+            }
+        }
+    }
+}
+---- ACÁ TERMINA ----
+--------PATENTE INVALIDA-----
+package Concesionaria;
+
+/**
+ * Excepción personalizada que se lanza cuando se intenta crear un vehículo con un formato de
+ * patente incorrecto. Al heredar de `Exception`, se convierte en una "checked exception", lo que
+ * obliga a manejarla explícitamente con un bloque try-catch.
+ */
+public class PatenteInvalidaException extends Exception {
+    /**
+     * Constructor que permite crear la excepción con un mensaje de error específico.
+     */
+    public PatenteInvalidaException(String message) {
+        super(message);
+    }
+}
+------ACÁ TERMINA ------
+------ VEHICULO-----
+package Concesionaria;
+
+/**
+ * Clase abstracta que sirve como base para todos los vehículos de la flota. Define los atributos
+ * comunes como marca, modelo, patente, etc. No se pueden crear objetos directamente de `Vehiculo`,
+ * solo de sus clases hijas.
+ */
+public abstract class Vehiculo {
+    // Atributos protegidos para ser accesibles desde las clases hijas.
+    private String marca;
+    private String modelo;
+    private int anio;
+    private String patente; // Formato: ABC123
+    private double kilometraje;
+
+    /**
+     * Constructor para inicializar un nuevo vehículo. Valida que el formato de la patente sea
+     * correcto (3 letras y 3 números).
+     * 
+     * @param marca La marca del vehículo.
+     * @param modelo El modelo del vehículo.
+     * @param anio El año de fabricación.
+     * @param patente La patente única del vehículo.
+     * @param kilometraje El kilometraje actual.
+     * @throws PatenteInvalidaException si la patente no cumple con el formato "ABC123".
+     */
+    public Vehiculo(String marca, String modelo, int anio, String patente, double kilometraje)
+            throws PatenteInvalidaException {
+        // Se utiliza una expresión regular para validar el formato de la patente.
+        if (!patente.matches("[A-Z]{3}[0-9]{3}")) {
+            // Si el formato no es válido, se lanza una excepción personalizada.
+            throw new PatenteInvalidaException(
+                    "La patente '" + patente + "' no es válida. Debe tener el formato ABC123.");
+        }
+        this.marca = marca;
+        this.modelo = modelo;
+        this.anio = anio;
+        this.patente = patente;
+        this.kilometraje = kilometraje;
+    }
+
+    // Getters y Setters para acceder y modificar los atributos de la clase.
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public String getModelo() {
+        return modelo;
+    }
+
+    public void setModelo(String modelo) {
+        this.modelo = modelo;
+    }
+
+    public int getAnio() {
+        return anio;
+    }
+
+    public void setAnio(int anio) {
+        this.anio = anio;
+    }
+
+    public String getPatente() {
+        return patente;
+    }
+
+    public void setPatente(String patente) {
+        this.patente = patente;
+    }
+
+    public double getKilometraje() {
+        return kilometraje;
+    }
+
+    public void setKilometraje(double kilometraje) {
+        this.kilometraje = kilometraje;
+    }
+
+    /**
+     * Método abstracto que obliga a las clases hijas a implementar una forma de identificarse,
+     * devolviendo su tipo (ej. "Auto", "Camión").
+     */
+    public abstract String getTipo();
+
+    /**
+     * Muestra la información básica del vehículo en la consola.
+     */
+    public void mostrarInfo() {
+        System.out.printf("Patente: %s, Marca: %s, Modelo: %s, Año: %d, Km: %.1f%n", patente, marca,
+                modelo, anio, kilometraje);
+    }
+
+    /**
+     * Sobrecarga del método `mostrarInfo` que permite opcionalmente incluir el tipo de vehículo.
+     * 
+     * @param conTipo Si es `true`, se muestra el tipo de vehículo.
+     */
+    public void mostrarInfo(boolean conTipo) {
+        if (conTipo) {
+            System.out.printf("Patente: %s, Tipo: %s, Marca: %s, Modelo: %s, Año: %d, Km: %.1f%n",
+                    patente, getTipo(), marca, modelo, anio, kilometraje);
+        } else {
+            mostrarInfo();
+        }
+    }
+
+    /**
+     * Sobrescribe el método `equals` para que dos vehículos se consideren iguales si tienen la
+     * misma patente. Es fundamental para evitar duplicados y para las búsquedas.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || !(o instanceof Vehiculo))
+            return false;
+        Vehiculo vehiculo = (Vehiculo) o;
+        return patente.equals(vehiculo.patente);
+    }
+
+    /**
+     * Sobrescribe el método `hashCode`. Es una buena práctica que si se sobrescribe `equals`,
+     * también se sobrescriba `hashCode`. Se basa en la patente para ser consistente con el método
+     * `equals`.
+     */
+    @Override
+    public int hashCode() {
+        return patente.hashCode();
+    }
+}
+----- ACA TERMINA -----
+}
